@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Vue 测试实例 - 菜鸟教程(runoob.com)</title>
+<script src="https://cdn.staticfile.org/vue/2.2.2/vue.min.js"></script>
+</head>
+<body>
+<div id="app">
+	<button v-on:click="get">刷新</button>
+  <p>{{ current[0] }}</p>
+  <p>{{ current[1] }}</p>
+  <p>{{ current[2] }}</p>
+  <p>{{ current[3] }}</p>
+  <p>{{ current[4] }}</p>
+</div>
+
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    card: [
+    {name:"卡牌", level:1, count:5},
+    {name:"蜘蛛", level:2, count:10},
+    {name:"皎月", level:3, count:15}
+    ],
+    poolCount: 30,
+    current: [],
+  },
+   methods: {
+    get:  function(event) {
+    	Vue.set(this.current, 0,this.pickFromPool(this.randomNum(1,this.poolCount)));
+    	Vue.set(this.current, 1,this.pickFromPool(this.randomNum(1,this.poolCount)));
+    	Vue.set(this.current, 2,this.pickFromPool(this.randomNum(1,this.poolCount)));
+    	Vue.set(this.current, 3,this.pickFromPool(this.randomNum(1,this.poolCount)));
+    	Vue.set(this.current, 4,this.pickFromPool(this.randomNum(1,this.poolCount)));
+
+    },
+    randomNum: function(minNum,maxNum) { 
+    switch(arguments.length){ 
+        case 1: 
+            return parseInt(Math.random()*minNum+1,10); 
+        break; 
+        case 2: 
+            return parseInt(Math.random()*(maxNum-minNum+1)+minNum,10); 
+        break; 
+            default: 
+                return 0; 
+            break; 
+    } 
+	},
+	pickFromPool: function(index) {
+		let count = 0;
+		for(let c in this.card){
+			count+=this.card[c].count;
+			if(count>=index){
+				return this.card[c].name;
+			}
+		}
+	}
+}
+})
+</script>
+
+</body>
+</html>
