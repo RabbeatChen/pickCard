@@ -7,34 +7,138 @@
 </head>
 <body>
 <div id="app">
+	<p>当前等级：{{userLevel}}</p>
+	<p>当前金币：{{money}}</p>
+	<p>一费卡概率：{{rate[userLevel-1].level1+'%'}}</p>
+	<p>二费卡概率：{{rate[userLevel-1].level2+'%'}}</p>
+	<p>三费卡概率：{{rate[userLevel-1].level3+'%'}}</p>
+	<p>四费卡概率：{{rate[userLevel-1].level4+'%'}}</p>
+	<p>五费卡概率：{{rate[userLevel-1].level5+'%'}}</p>
 	<button v-on:click="get">刷新</button>
-  <p>{{ current[0] }}</p>
-  <p>{{ current[1] }}</p>
-  <p>{{ current[2] }}</p>
-  <p>{{ current[3] }}</p>
-  <p>{{ current[4] }}</p>
+	<button @click="levelUp">升级</button>
+	<button @click="levelDown">降级</button>
+	<button @click="getMoney">获得10块金币</button>
+  <p v-for="i in 5" @click="buy(current[i-1], i)">{{ current[i-1]?current[i-1].name+'-':null }}{{ current[i-1]?current[i-1].level+'-':null}}{{current[i-1]?current[i-1].race+'-':null}}{{current[i-1]?current[i-1].job:null}}</p>
+
+  <h1>等候区</h1>
+  <p v-for="(card,i) in waitPool" @click="sell(card,i)">{{card.name}}</p>
+ 
 </div>
 
 <script>
 new Vue({
   el: '#app',
   data: {
-    card: [
-    {name:"卡牌", level:1, count:5},
-    {name:"蜘蛛", level:2, count:10},
-    {name:"皎月", level:3, count:15}
-    ],
-    poolCount: 30,
+  	pool:[
+			[
+			    {name:"卡牌", level:1, count:29, race: "猩红之月", job: "魔法师"},
+			    {name:"蜘蛛", level:1, count:29, race: "猩红之月", job: "圣盾使"},
+			    {name:"豹女", level:1, count:29, race: "三国猛将", job: "神射手"},
+		    ],
+		     [
+			 	{name:"塞拉斯", level:2, count:22, race: "月神", job: "斗士"},
+			    {name:"蔚", level:2, count:22, race: "三国猛将", job: "斗士"},
+			    {name:"月男", level:2, count:22, race: "月神", job: "猎人"},
+		    ],
+		    [
+		    	 {name:"阿卡丽", level:3, count:18, race: "忍者", job: "刺客"},
+			     {name:"寡妇", level:3, count:18, race: "猩红之月", job: "夜影"},
+			     {name:"小法", level:3, count:18, race: "森林", job: "魔法师"}
+		    ],
+		     [
+		    	 {name:"狐狸", level:4, count:12, race: "明昼", job: "魔法师"},
+			     {name:"男刀", level:4, count:12, race: "玉剑仙", job: "刺客"},
+			     {name:"猪妹", level:4, count:12, race: "福星", job: "重装"}
+		    ],
+		     [
+		    	 {name:"瞎子", level:5, count:10, race: "天神", job: "决斗"},
+			     {name:"时光", level:5, count:10, race: "猩红之月", job: "秘术师"},
+			     {name:"EZ", level:5, count:10, race: "森林", job: "耀光使"}
+		    ]
+  	],
+  	waitPool:[],
+	money: 50,     
     current: [],
+    userLevel: 1,
+    rate:[
+    	{level1: 100, level2: 0, level3: 0, level4:0, level5:0},
+    	{level1: 100, level2: 0, level3: 0, level4:0, level5:0},
+    	{level1: 75, level2: 25, level3: 0, level4:0, level5:0},
+    	{level1: 55, level2: 30, level3: 15, level4:0, level5:0},
+    	{level1: 45, level2: 30, level3: 20, level4:5, level5:0},
+    	{level1: 30, level2: 35, level3: 25, level4:10, level5:0},
+    	{level1: 19, level2: 35, level3: 30, level4:15, level5:1},
+    	{level1: 14, level2: 20, level3: 35, level4:25, level5:6},
+    	{level1: 10, level2: 15, level3: 30, level4:30, level5:15},
+    ],
+    ifBuy:[true,true,true,true,true]
+  },
+  mounted: function(){
+  	this.get();
   },
    methods: {
+   	getMoney: function(){
+   		this.money+=10;
+   	},
+   	buy: function(card, index){
+   		let price = card.level;
+   		if(this.money-price>=0 && this.waitPool.length<9 && this.ifBuy[index-1]){
+			this.waitPool.push(card);
+			this.money-=price;
+			//买了牌之后会减少一张卡池的牌
+			let newPool = this.pool[card.level-1];
+			for(let i in newPool){
+				if(newPool[i].name == card.name){
+					newPool[i].count--;
+					break;
+				}
+			}
+			Vue.set(this.pool, card.level-1, newPool);
+			Vue.set(this.ifBuy, index-1, false);
+   		}
+   		
+   	},
+   	sell: function(card, i){
+   		this.waitPool.splice(i,1);
+   		this.money+=card.level;
+   		let newPool = this.pool[card.level-1];
+			for(let i in newPool){
+				if(newPool[i].name == card.name){
+					newPool[i].count++;
+					break;
+				}
+			}
+			Vue.set(this.pool, card.level-1, newPool);
+   	},
+   	levelUp: function(){
+   		if(this.userLevel<9){
+   			this.userLevel++;
+   		}
+   	},
+   	levelDown: function(){
+   		if(this.userLevel>1){
+   			this.userLevel--;
+   		}
+   	},
     get:  function(event) {
-    	Vue.set(this.current, 0,this.pickFromPool(this.randomNum(1,this.poolCount)));
-    	Vue.set(this.current, 1,this.pickFromPool(this.randomNum(1,this.poolCount)));
-    	Vue.set(this.current, 2,this.pickFromPool(this.randomNum(1,this.poolCount)));
-    	Vue.set(this.current, 3,this.pickFromPool(this.randomNum(1,this.poolCount)));
-    	Vue.set(this.current, 4,this.pickFromPool(this.randomNum(1,this.poolCount)));
-
+    	for(let i = 0; i<5; i++){
+    		let rate = this.rate[this.userLevel-1];
+    		let num = Math.random()*100;
+    		let pickLevel=null;
+    		let rateCount=0;
+    		for(let x in rate){
+    			rateCount+=rate[x];
+    				if(rateCount>=num){
+    					pickLevel = parseInt(x.charAt(x.length - 1));
+    				break;
+    				}
+    				
+    			// }
+    			
+    		}
+    		Vue.set(this.current, i,this.pickFromPool(this.randomNum(1,this.callLevelCount(pickLevel)), pickLevel));
+    		this.ifBuy = [true,true,true,true,true];
+    	}
     },
     randomNum: function(minNum,maxNum) { 
     switch(arguments.length){ 
@@ -49,14 +153,34 @@ new Vue({
             break; 
     } 
 	},
-	pickFromPool: function(index) {
+	pickFromPool: function(index, level) {
 		let count = 0;
-		for(let c in this.card){
-			count+=this.card[c].count;
+		for(let c in this.pool[level-1]){
+			count+=this.pool[level-1][c].count;
 			if(count>=index){
-				return this.card[c].name;
+				return this.pool[level-1][c];
 			}
 		}
+	},
+	callLevelCount: function(level){
+		switch(level){ 
+        case 1: 
+            return 29*this.pool[0].length; 
+        break; 
+        case 2: 
+            return 22*this.pool[1].length;
+        break;
+        case 3:
+        	return 18*this.pool[2].length;
+        case 4:
+        	return 12*this.pool[3].length;
+        case 5:
+        	return 10*this.pool[4].length;
+        break; 
+            default: 
+                return 0; 
+            break; 
+    } 
 	}
 }
 })
