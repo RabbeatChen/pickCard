@@ -18,7 +18,7 @@
 	<button @click="levelUp">升级</button>
 	<button @click="levelDown">降级</button>
 	<button @click="getMoney">获得10块金币</button>
-  <p v-for="i in 5" @click="buy(current[i-1], i)">{{ current[i-1]?current[i-1].name+'-':null }}{{ current[i-1]?current[i-1].level+'-':null}}{{current[i-1]?current[i-1].race+'-':null}}{{current[i-1]?current[i-1].job:null}}</p>
+  <p v-for="i in 5" @click="buy(current[i-1], i)" v-show="ifBuy[i-1]">{{ current[i-1]?current[i-1].name+'-':null }}{{ current[i-1]?current[i-1].level+'-':null}}{{current[i-1]?current[i-1].race+'-':null}}{{current[i-1]?current[i-1].job:null}}</p>
 
   <h1>等候区</h1>
   <p v-for="(card,i) in waitPool" @click="sell(card,i)">{{card.name}}</p>
@@ -163,24 +163,12 @@ new Vue({
 		}
 	},
 	callLevelCount: function(level){
-		switch(level){ 
-        case 1: 
-            return 29*this.pool[0].length; 
-        break; 
-        case 2: 
-            return 22*this.pool[1].length;
-        break;
-        case 3:
-        	return 18*this.pool[2].length;
-        case 4:
-        	return 12*this.pool[3].length;
-        case 5:
-        	return 10*this.pool[4].length;
-        break; 
-            default: 
-                return 0; 
-            break; 
-    } 
+		let count=0;
+		for(let i in this.pool[level-1]){
+        		count+=this.pool[level-1][i].count;
+        	}
+            return count; 
+	
 	}
 }
 })
