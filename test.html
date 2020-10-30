@@ -7,6 +7,7 @@
 </head>
 <body>
 <div id="app">
+	<p>{{ifBuy}}</p>
 	<p>当前等级：{{userLevel}}</p>
 	<p>当前金币：{{money}}</p>
 	<p>一费卡概率：{{rate[userLevel-1].level1+'%'}}</p>
@@ -21,7 +22,7 @@
   <p v-for="i in 5" @click="buy(current[i-1], i)" v-show="ifBuy[i-1]">{{ current[i-1]?current[i-1].name+'-':null }}{{ current[i-1]?current[i-1].level+'-':null}}{{current[i-1]?current[i-1].race+'-':null}}{{current[i-1]?current[i-1].job:null}}</p>
 
   <h1>等候区</h1>
-  <p v-for="(card,i) in waitPool" @click="sell(card,i)">{{card.name}}</p>
+  <p v-for="(card,i) in waitPool" @click="sell(card,i)">{{card.name}}-{{card.star}}</p>
  
 </div>
 
@@ -31,29 +32,29 @@ new Vue({
   data: {
   	pool:[
 			[
-			    {name:"卡牌", level:1, count:29, race: "猩红之月", job: "魔法师"},
-			    {name:"蜘蛛", level:1, count:29, race: "猩红之月", job: "圣盾使"},
-			    {name:"豹女", level:1, count:29, race: "三国猛将", job: "神射手"},
+			    {name:"卡牌", level:1, count:29, race: "猩红之月", job: "魔法师", star: 1},
+			    {name:"蜘蛛", level:1, count:29, race: "猩红之月", job: "圣盾使", star: 1},
+			    {name:"豹女", level:1, count:29, race: "三国猛将", job: "神射手", star: 1},
 		    ],
 		     [
-			 	{name:"塞拉斯", level:2, count:22, race: "月神", job: "斗士"},
-			    {name:"蔚", level:2, count:22, race: "三国猛将", job: "斗士"},
-			    {name:"月男", level:2, count:22, race: "月神", job: "猎人"},
+			 	{name:"塞拉斯", level:2, count:22, race: "月神", job: "斗士", star: 1},
+			    {name:"蔚", level:2, count:22, race: "三国猛将", job: "斗士", star: 1},
+			    {name:"月男", level:2, count:22, race: "月神", job: "猎人", star: 1},
 		    ],
 		    [
-		    	 {name:"阿卡丽", level:3, count:18, race: "忍者", job: "刺客"},
-			     {name:"寡妇", level:3, count:18, race: "猩红之月", job: "夜影"},
-			     {name:"小法", level:3, count:18, race: "森林", job: "魔法师"}
+		    	 {name:"阿卡丽", level:3, count:18, race: "忍者", job: "刺客", star: 1},
+			     {name:"寡妇", level:3, count:18, race: "猩红之月", job: "夜影", star: 1},
+			     {name:"小法", level:3, count:18, race: "森林", job: "魔法师", star: 1}
 		    ],
 		     [
-		    	 {name:"狐狸", level:4, count:12, race: "明昼", job: "魔法师"},
-			     {name:"男刀", level:4, count:12, race: "玉剑仙", job: "刺客"},
-			     {name:"猪妹", level:4, count:12, race: "福星", job: "重装"}
+		    	 {name:"狐狸", level:4, count:12, race: "明昼", job: "魔法师", star: 1},
+			     {name:"男刀", level:4, count:12, race: "玉剑仙", job: "刺客", star: 1},
+			     {name:"猪妹", level:4, count:12, race: "福星", job: "重装", star: 1}
 		    ],
 		     [
-		    	 {name:"瞎子", level:5, count:10, race: "天神", job: "决斗"},
-			     {name:"时光", level:5, count:10, race: "猩红之月", job: "秘术师"},
-			     {name:"EZ", level:5, count:10, race: "森林", job: "耀光使"}
+		    	 {name:"瞎子", level:5, count:10, race: "天神", job: "决斗", star: 1},
+			     {name:"时光", level:5, count:10, race: "猩红之月", job: "秘术师", star: 1},
+			     {name:"EZ", level:5, count:10, race: "森林", job: "耀光使", star: 1}
 		    ]
   	],
   	waitPool:[],
@@ -83,7 +84,23 @@ new Vue({
    	buy: function(card, index){
    		let price = card.level;
    		if(this.money-price>=0 && this.waitPool.length<9 && this.ifBuy[index-1]){
-			this.waitPool.push(card);
+   			//遍历一下是否存在2个卡
+   			let waitCount = 0;
+   			let place=[];
+   			for(let i in this.waitPool){
+   				if(this.waitPool[i].name==card.name && this.waitPool[i].star==card.star){
+   					waitCount++;
+   					place.push(i)
+   				}
+   			}
+   			if(waitCount<2){
+   				this.waitPool.push(card);
+   			}else{
+   				card.star = 2;
+   				Vue.set(this.waitPool, place[0], card);
+   				this.waitPool.splice(place[1],1);
+   			}
+			
 			this.money-=price;
 			//买了牌之后会减少一张卡池的牌
 			let newPool = this.pool[card.level-1];
